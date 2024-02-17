@@ -1,12 +1,12 @@
-# Attendance Application
+# Attendance system
 
 ### Description
 
-Attendance Application is an aplication which is used in employee management where helps them to do attendance when they arrives at work and when theyleave.
+Attendance system is an aplication which is used in employee management where helps them to do attendance when they arrives at work and when theyleave.
 
 ### Setup
 
-These are the procedures to follow when setting up Attendance Application for the first time using sail with docker
+These are the procedures to follow when setting up Attendance system for the first time using sail with docker
 
 -   Copy the .env.example into .env
     ```shell
@@ -19,6 +19,7 @@ These are the procedures to follow when setting up Attendance Application for th
     ```
 
 -   Install composer dependencies
+
     ```shell
     docker run --rm \
     -u "$(id -u):$(id -g)" \
@@ -28,15 +29,15 @@ These are the procedures to follow when setting up Attendance Application for th
     composer install --ignore-platform-reqs
     ```
 
-- Build the project **(keep this running in a tab in order to get access to the sail command)**
+-   Build the project **(keep this running in a tab in order to get access to the sail command)**
     ```shell
     vendor/bin/sail up
     ```
-- Generate the application key
+-   Generate the application key
     ```shell
     vendor/bin/sail artisan key:generate
     ```
-- Run migrations
+-   Run migrations
     ```shell
     vendor/bin/sail artisan migrate:fresh
     ```
