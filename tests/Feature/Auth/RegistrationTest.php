@@ -127,4 +127,4 @@ test("Through errors if there are errors while creating new users", function (ar
             ];
         }
     ]
-])->only();
+]);
