@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,13 @@ Route::prefix('employee')->middleware('auth')->group(function () {
     Route::post('', [EmployeeController::class, "store"]);
     Route::put('{employeeID}', [EmployeeController::class, "update"]);
     Route::delete('{employeeID}', [EmployeeController::class, "destroy"]);
+});
+
+Route::prefix('attendance')->middleware('auth')->group(function () {
+    Route::get('{from}/{to}', [AttendanceController::class, "index"]);
+    Route::post('', [AttendanceController::class, "store"]);
+    Route::put('{attendanceID}', [AttendanceController::class, "update"]);
+    Route::delete('{attendanceID}', [AttendanceController::class, "destroy"]);
 });
 
 require __DIR__ . '/auth.php';

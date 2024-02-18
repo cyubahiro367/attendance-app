@@ -295,13 +295,13 @@ class EmployeeController extends Controller
     )]
     #[OA\PathParameter(
         name: "employeeID",
-        description: "ID of the employee to update",
+        description: "ID of the employee to delete",
         required: true,
         example: 1
     )]
     #[OA\Response(
         response: 204,
-        description: 'Successfully updated',
+        description: 'Successfully deleted',
         content: new OA\JsonContent(
             example: [
                 "message" => "Employee deleted successfully"
