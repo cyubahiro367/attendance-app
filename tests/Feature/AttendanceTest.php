@@ -1,10 +1,12 @@
 <?php
 
 use App\Enum\AttendanceType;
+use App\Mail\SendAttendanceRecord;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -41,6 +43,9 @@ test("new Attendance can be created", function () {
 });
 
 test("Display all Attendances", function () {
+
+    Mail::fake();
+
     $employee = Employee::factory()->create([
         'names' => 'Test User',
         'email' => 'test@example.com',
@@ -67,10 +72,18 @@ test("Display all Attendances", function () {
                 "names" => $employee->names,
                 "user" => $this->user->name,
                 "date" => $data['date'],
-                "time" => $data['time']
+                "time" => $data['time'],
+                "status" => 'Arrive'
             ]
         ]
     );
+
+    $employeName = $employee->names;
+    $employeEmail = $employee->email;
+
+    Mail::assertQueued(SendAttendanceRecord::class, function (SendAttendanceRecord $mail) use ($employeEmail, $employeName) {
+        return $mail->names === $employeName && $mail->hasTo($employeEmail) &&  $mail->hasFrom(env('MAIL_FROM_ADDRESS')) && $mail->hasSubject('Attendance Record');
+    });
 });
 
 test("Update Attendance data", function () {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enum\AttendanceType;
+use App\Mail\SendAttendanceRecord;
 use App\Models\Attendance;
 use App\Models\Employee;
 use Carbon\Carbon;
@@ -11,12 +12,13 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class AttendanceController extends Controller
 {
     #[OA\Get(
         tags: ['Attendance'],
-        path: '/attendance',
+        path: '/attendance/{from}/{to}',
         description: 'display all attendance',
         summary: 'retrieving all attendance',
     )]
@@ -42,7 +44,9 @@ class AttendanceController extends Controller
                     "names" => "First Employee",
                     "email" => "test@test.com",
                     "employeeIdentifier" => "123456",
-                    "phoneNumber" => "125465"
+                    "phoneNumber" => "125465",
+                    "status" => "Arrive",
+                    "user" => null
                 ]
             ]
         )
@@ -79,7 +83,7 @@ class AttendanceController extends Controller
             ->leftJoin('users AS c', 'a.userID', '=', 'c.id')
             ->where('date', '>=', $startDate)
             ->where('date', '<', $endDate)
-            ->select('a.id', 'b.names', 'c.name AS user', DB::raw("FROM_UNIXTIME(a.date, '%Y-%m-%d') AS date"), 'a.time')
+            ->select('a.id', 'b.names', DB::raw("FROM_UNIXTIME(a.date, '%Y-%m-%d') AS date"), 'a.time', DB::raw("IF(a.type = 1, 'Arrive', 'Leave') AS status"), 'c.name AS user')
             ->get();
 
         return response()->json($attendance);
@@ -166,28 +170,36 @@ class AttendanceController extends Controller
             'time' => ['required', "date_format:H:i"],
         ]);
 
+        $employee = Employee::where('id', $request->employeeID)->first();
+
+        throw_if(is_null($employee), Exception::class, "Employee not found");
+
         $date = Carbon::parse($request->date)->setHour(0)->setMinute(0)->getTimestamp();
 
-        $existArrival = Attendance::where([['employeeID', $request->employeeID], ['date', $date], ['type', $request->type]])->exists();
+        $existArrival = Attendance::where([['employeeID', $employee->id], ['date', $date], ['type', $request->type]])->exists();
 
         throw_if($existArrival, Exception::class, "Attendance recorded");
 
         if ($request->type === AttendanceType::LEAVE->value) {
-            $leaveBefore = Attendance::where([['employeeID', $request->employeeID], ['date', $date], ['type', AttendanceType::ARRIVE->value]])->first();
+            $leaveBefore = Attendance::where([['employeeID', $employee->id], ['date', $date], ['type', AttendanceType::ARRIVE->value]])->first();
             throw_if(is_null($leaveBefore), Exception::class, "Record Arrival first");
         }
 
-        Attendance::firstorCreate([
-            'employeeID' => $request->employeeID,
-            'type' => $request->type,
-            'date' => $date,
-        ], [
-            'employeeID' => $request->employeeID,
-            'type' => $request->type,
-            'date' => $date,
-            'time' => $request->time,
-            'userID' => Auth::id()
-        ]);
+        DB::transaction(function () use($employee, $request, $date){
+            Attendance::firstorCreate([
+                'employeeID' => $employee->id,
+                'type' => $request->type,
+                'date' => $date,
+            ], [
+                'employeeID' => $employee->id,
+                'type' => $request->type,
+                'date' => $date,
+                'time' => $request->time,
+                'userID' => Auth::id()
+            ]);
+
+            Mail::to($employee->email)->send(new SendAttendanceRecord($employee->names));
+        });
 
         return response()->json(["message" => "Attendance recorded successfully"]);
     }
