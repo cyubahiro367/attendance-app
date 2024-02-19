@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,18 +22,21 @@ Route::get('/', function () {
     ];
 });
 
-Route::prefix('employee')->middleware('auth')->group(function () {
-    Route::get('', [EmployeeController::class, "index"]);
-    Route::post('', [EmployeeController::class, "store"]);
-    Route::put('{employeeID}', [EmployeeController::class, "update"]);
-    Route::delete('{employeeID}', [EmployeeController::class, "destroy"]);
+Route::prefix('employee')->group(function () {
+    Route::get('', [EmployeeController::class, "index"])->name('display-employee');
+    Route::post('', [EmployeeController::class, "store"])->name('create-employee');
+    Route::put('{employeeID}', [EmployeeController::class, "update"])->name('update-employee');
+    Route::delete('{employeeID}', [EmployeeController::class, "destroy"])->name('delete-employee');
 });
 
-Route::prefix('attendance')->middleware('auth')->group(function () {
-    Route::get('{from}/{to}', [AttendanceController::class, "index"]);
-    Route::post('', [AttendanceController::class, "store"]);
-    Route::put('{attendanceID}', [AttendanceController::class, "update"]);
-    Route::delete('{attendanceID}', [AttendanceController::class, "destroy"]);
+Route::prefix('attendance')->group(function () {
+    Route::get('{from}/{to}', [AttendanceController::class, "index"])->name('display-attendances');
+    Route::post('', [AttendanceController::class, "store"])->name('create-attendance');
+    Route::put('{attendanceID}', [AttendanceController::class, "update"])->name('update-attendance');
+    Route::delete('{attendanceID}', [AttendanceController::class, "destroy"])->name('delete-attendance');
 });
+
+Route::get('report/{type}', [ReportController::class, "generate"])->name('generate-pdf');
+// });
 
 require __DIR__ . '/auth.php';

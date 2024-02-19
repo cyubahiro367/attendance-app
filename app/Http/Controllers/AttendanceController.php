@@ -16,6 +16,11 @@ use Illuminate\Support\Facades\Mail;
 
 class AttendanceController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['auth:sanctum']);
+    }
+    
     #[OA\Get(
         tags: ['Attendance'],
         path: '/attendance/{from}/{to}',

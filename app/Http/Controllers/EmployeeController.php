@@ -9,6 +9,11 @@ use OpenApi\Attributes as OA;
 
 class EmployeeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['auth:sanctum']);
+    }
+
     #[OA\Get(
         tags: ['Employee'],
         path: '/employee',
