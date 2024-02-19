@@ -1,0 +1,38 @@
+name: Attendance System Test Workflow
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "master"
+jobs:
+  test:
+    name: Run all tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code from event's triggering the workflow
+        uses: actions/checkout@v3
+      - name: Install php8.3 and composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+      - name: Print php and composer versions to confirm successful installation
+        run: php -v && composer
+      - name: Enable default mysql server service
+        run: sudo systemctl start mysql.service
+      - name: Print mysql status
+        run: sudo systemctl status mysql
+      - name: Copy .env from .env.example & .env.testing.example
+        run: cp .env.testing.example .env.testing
+      - name: Install php dependencies with composer
+        run: composer install --ignore-platform-reqs
+      - name: Generate app key
+        run: php artisan key:generate --env=testing
+      - name: Create testing database using bash script
+        run: |
+          chmod +x create-testing-database.sh
+          ./create-testing-database.sh
+        shell: bash
+      - name: Run migrations
+        run: php artisan migrate --env=testing
+      - name: Run tests
+        run: php artisan test
