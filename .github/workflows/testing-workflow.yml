@@ -1,7 +1,7 @@
 name: Attendance System Test Workflow
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches:
       - "master"
 jobs:
