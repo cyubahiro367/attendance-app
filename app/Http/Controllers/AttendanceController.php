@@ -302,13 +302,6 @@ class AttendanceController extends Controller
 
         $date = Carbon::parse($request->date)->setHour(0)->setMinute(0)->getTimestamp();
 
-        if ($request->type === AttendanceType::LEAVE->value) {
-
-            $leaveBefore = Attendance::where([['employeeID', $request->employeeID], ['date', $date], ['type', AttendanceType::ARRIVE->value]])->first();
-
-            throw_if(is_null($leaveBefore), Exception::class, "Record Arrival first");
-        }
-
         $attendance->update([
             'employeeID' => $request->employeeID,
             'type' => $request->type,

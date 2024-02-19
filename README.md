@@ -41,3 +41,13 @@ These are the procedures to follow when setting up Attendance system for the fir
     ```shell
     vendor/bin/sail artisan migrate:fresh
     ```
+
+-   Run documentation to test enpoints
+    ```shell
+    vendor/bin/sail artisan l5-swagger:generate
+    ```
+
+-   Endapoint of documentation
+    ```shell
+    ${APP_URL}/api/docs
+    ```
